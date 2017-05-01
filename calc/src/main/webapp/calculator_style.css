@@ -1,0 +1,40 @@
+.calc {
+	width: 300px;
+	height: 250px;
+	border: 10px double #278675;
+	margin: auto;
+	background-color:  #DCDCDC;
+}
+.elements{
+	margin-left:25px;
+	
+}
+
+.label {
+	font-size: 40px;
+	text-align:center
+}
+input[type=submit]{
+	background-color:  #696969;
+	height: 30px;
+	width:60px;
+	font-size : 16px;
+	border-radius: 12px;
+	outline: none;
+	color:white;
+	margin-bottom:5px;
+}
+input[id=equal] {
+	width: 125px;
+}
+.window {
+	margin-top:20px;
+	margin-bottom:5px;
+	height: 30px;
+	width:240px;
+	font-size: 16px;
+	text-align: right;
+}
+body {
+	background-color: gray;
+}
