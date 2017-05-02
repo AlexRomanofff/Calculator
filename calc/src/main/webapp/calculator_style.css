@@ -11,7 +11,7 @@
 }
 
 .label {
-	font-size: 40px;
+	font-size: 35px;
 	text-align:center
 }
 
@@ -24,6 +24,10 @@ input [type=button] {
 	outline: none;
 	color:white;
 	margin-bottom:5px;
+}
+h2 {
+	font-size : 20px;
+	text-align: center;
 }
 
 .calc_buttons>input[type=button],input[type=submit]{

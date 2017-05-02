@@ -12,13 +12,15 @@ import org.apache.wicket.markup.html.form.Button;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.model.Model;
+import org.apache.wicket.util.parse.metapattern.MetaPattern;
+import org.apache.wicket.validation.validator.PatternValidator;
 
 public class Calculator extends WebPage{	
 	
 	private static final long serialVersionUID = 2L;	
 	private final String MINUS = "-";
 	private final String ZERO = "0";
-	private final TextField<String> value = new TextField<String>("value",  Model.of(""));
+	private TextField<String> value; 
 	
 	private Form<?> form = null;
 	private String operation;	
@@ -28,20 +30,19 @@ public class Calculator extends WebPage{
 	private boolean isSigned;
 	private boolean isAdded;	
 	
-	public Calculator() {
+	public Calculator() {		 
+				
+		form = new Form<String>("form");
+		add(new Label("lbl", new Model<String>("Calculator")));
+		add(new Label("lab", new Model<String>("To start the application press \"C\" button ")));
 		
 		firstValue = ZERO;
 		secondValue = ZERO;
+		value = new TextField<String>("value",  new Model<String>(ZERO));
 		
-		form = new Form<String>("form");
-		add(new Label("lbl", new Model<String>("Calculator")));
-
-		setValueToZero();
 		form.add(value);
 		initAllButtons();
-		add(form);
-		setResponsePage(getPage());
-		
+		add(form);	
 	}
 
 	private void initAllButtons() {
@@ -59,8 +60,10 @@ public class Calculator extends WebPage{
 		for (int i = 0; i <= 9; i++) {
 			final String s = "" + i;
 			form.add(new AjaxButton(s) {
+				
 				public void onSubmit(AjaxRequestTarget target, Form form) {
-					value.setModelObject(setValuesForNumbers(s));
+							
+					setValueOnScreen(setValuesForNumbers(s));					
 					target.add(value, "value");
 				}
 			});
@@ -89,7 +92,7 @@ public class Calculator extends WebPage{
 					}
 
 					getMathOperand(sign, num);
-					target.add(value);
+					target.add(value, "value");
 				}
 
 				private void getMathOperand(final String sign, String num) {
@@ -125,7 +128,7 @@ public class Calculator extends WebPage{
 						textValue = MINUS + textValue;
 					}
 				
-					value.setModelObject(textValue);
+					setValueOnScreen(textValue);
 					target.add(value);
 					
 				}
@@ -138,14 +141,13 @@ public class Calculator extends WebPage{
 		form.add(new AjaxButton("backspace") {
 			
 			public void onSubmit(AjaxRequestTarget target, Form form) {
-				if (isAdded) {
-				
+				if (isAdded) {				
 				
 					String textValue = value.getInput();
 					if(textValue.length()>1) {
 					textValue = textValue.substring(0, textValue.length() - 1);
 					} else if (textValue.length()==1) textValue = ZERO;
-					value.setModelObject(textValue);
+					setValueOnScreen(textValue);
 				
 					target.add(value);
 				}
@@ -187,7 +189,7 @@ public class Calculator extends WebPage{
 			public void onSubmit(AjaxRequestTarget target, Form form) {
 				
 				if(!isPointed) {
-				value.setModelObject(value.getInput()+".");
+				setValueOnScreen(value.getInput()+".");
 				isPointed = true;
 				target.add(value);
 				}
@@ -206,13 +208,13 @@ public class Calculator extends WebPage{
 	
 	private void getResult() {
 		String result = mathOperation(firstValue, secondValue);
-		value.setModelObject(result);
+		setValueOnScreen(result);
 		isPointed = true;
 		isAdded = false;
 	}	
 				
 	private void setValueToZero() {
-		value.setDefaultModelObject(ZERO);
+		setValueOnScreen(ZERO);
 	}
 	
 	private String setValuesForNumbers(String s) {
@@ -220,7 +222,7 @@ public class Calculator extends WebPage{
 		String value = this.value.getInput();
 		if (isAdded) {
 			if (value.equals("0")) {
-				value = s;
+				value = s;				
 			} else {
 				value += s;
 			}
@@ -231,6 +233,11 @@ public class Calculator extends WebPage{
 		return value;
 	}
 
+	private void setValueOnScreen(String value) {
+		
+		this.value.setModelObject(value);
+	}
+	
 	private String mathOperation(String first, String second) {
 
 		BigDecimal result = new BigDecimal("0");
