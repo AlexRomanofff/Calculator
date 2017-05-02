@@ -14,7 +14,8 @@
 	font-size: 40px;
 	text-align:center
 }
-input[type=submit]{
+
+input [type=button] {
 	background-color:  #696969;
 	height: 30px;
 	width:60px;
@@ -24,7 +25,18 @@ input[type=submit]{
 	color:white;
 	margin-bottom:5px;
 }
-input[id=equal] {
+
+.calc_buttons>input[type=button],input[type=submit]{
+	background-color:  #696969;
+	height: 30px;
+	width:60px;
+	font-size : 16px;
+	border-radius: 12px;
+	outline: none;
+	color:white;
+	margin-bottom:5px;
+}
+.calc_buttons>input[id=equal] {
 	width: 125px;
 }
 .window {
