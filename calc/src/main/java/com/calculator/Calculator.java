@@ -37,7 +37,6 @@ public class Calculator extends WebPage{
 	public Calculator() {		 
 				
 		form = new Form<String>("form");
-		function = new FunctionOfCalculator();
 		add(new Label("lbl", new Model<String>("Calculator")));
 		add(new Label("lab", new Model<String>("To start the application press \"C\" button ")));				
 		value = new TextField<String>("value",  new Model<String>(ZERO));		
