@@ -23,8 +23,6 @@ public class Calculator extends WebPage{
 	private final String ERROR = "err";	
 	private final String MINUS = "-";
 	
-	private FunctionOfCalculator function;
-	
 	private Form<?> form;
 	private TextField<String> value; 
 	private Operation operation;
