@@ -82,8 +82,7 @@ public class Calculator extends WebPage{
 					if (num.equals(ERROR)) {
 						setDefault();
 						setValueToZero();
-						num = ZERO;
-						target.add(value);
+						num = ZERO;				
 					}
 
 					getMathOperand(op, num);
