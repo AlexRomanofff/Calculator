@@ -17,13 +17,17 @@ import org.apache.wicket.validation.validator.PatternValidator;
 
 public class Calculator extends WebPage{	
 	
-	private static final long serialVersionUID = 2L;	
-	private final String MINUS = "-";
+	private static final long serialVersionUID = 2L;
+
 	private final String ZERO = "0";
-	private TextField<String> value; 
+	private final String ERROR = "err";	
+	private final String MINUS = "-";
 	
-	private Form<?> form = null;
-	private String operation;	
+	private FunctionOfCalculator function;
+	
+	private Form<?> form;
+	private TextField<String> value; 
+	private Operation operation;
 	private String firstValue;
 	private String secondValue;	
 	private boolean isPointed;
@@ -33,16 +37,14 @@ public class Calculator extends WebPage{
 	public Calculator() {		 
 				
 		form = new Form<String>("form");
+		function = new FunctionOfCalculator();
 		add(new Label("lbl", new Model<String>("Calculator")));
-		add(new Label("lab", new Model<String>("To start the application press \"C\" button ")));
-		
-		firstValue = ZERO;
-		secondValue = ZERO;
-		value = new TextField<String>("value",  new Model<String>(ZERO));
-		
-		form.add(value);
+		add(new Label("lab", new Model<String>("To start the application press \"C\" button ")));				
+		value = new TextField<String>("value",  new Model<String>(ZERO));		
+		form.add(value);		
+		setDefault();
 		initAllButtons();
-		add(form);	
+		add(form);			
 	}
 
 	private void initAllButtons() {
@@ -70,35 +72,30 @@ public class Calculator extends WebPage{
 		}
 	}
 
+	
 	private void initSignsButtons() {
 
-		List<String> signs = new ArrayList<>();
-		signs.add("plus");
-		signs.add("minus");
-		signs.add("division");
-		signs.add("multiply");
+		for (final Operation op: Operation.values()) {
 
-		for (final String sign : signs) {
-
-			form.add(new AjaxButton(sign) {
+			form.add(new AjaxButton(op.toString()) {
 
 				public void onSubmit(AjaxRequestTarget target, Form form) {
 
 					String num = value.getInput();
-					if (num.equals("err")) {
+					if (num.equals(ERROR)) {
 						setDefault();
 						setValueToZero();
+						num = ZERO;
 						target.add(value);
 					}
 
-					getMathOperand(sign, num);
+					getMathOperand(op, num);
 					target.add(value, "value");
 				}
 
-				private void getMathOperand(final String sign, String num) {
+				private void getMathOperand(Operation op, String num) {
 					
 					if (!isSigned) {
-						operation = sign;
 						isPointed = false;
 						isAdded = false;
 						isSigned = true;
@@ -106,14 +103,14 @@ public class Calculator extends WebPage{
 					} else {
 						secondValue = num;
 						getResult();
-						operation = sign;
 					}
+					operation = op;
 				}
 
 			});
 		}
 	}
-
+	
 	private void initPlusMinus() {
 
 		form.add(new AjaxButton("plusMinus") {
@@ -122,15 +119,10 @@ public class Calculator extends WebPage{
 				
 				if (isAdded) {
 					String textValue = value.getInput();
-					if (textValue.startsWith(MINUS)) {
-						textValue = textValue.substring(1);
-					} else {
-						textValue = MINUS + textValue;
-					}
+					textValue = setPlusMinus(textValue);
 				
 					setValueOnScreen(textValue);
-					target.add(value);
-					
+					target.add(value);					
 				}
 			}
 		});			
@@ -144,14 +136,11 @@ public class Calculator extends WebPage{
 				if (isAdded) {				
 				
 					String textValue = value.getInput();
-					if(textValue.length()>1) {
-					textValue = textValue.substring(0, textValue.length() - 1);
-					} else if (textValue.length()==1) textValue = ZERO;
+					textValue = deleteOneDigit(textValue);
 					setValueOnScreen(textValue);
 				
 					target.add(value);
-				}
-				
+				}				
 			}
 		});
 	}
@@ -207,12 +196,21 @@ public class Calculator extends WebPage{
 	}	
 	
 	private void getResult() {
-		String result = mathOperation(firstValue, secondValue);
+
+		BigDecimal evaluation = operation.eval(firstValue, secondValue);
+		String result = null;
+		
+		if (evaluation == null) {
+			result = ERROR;
+		} else {
+			result = operation.eval(firstValue, secondValue).stripTrailingZeros().toPlainString();			
+			this.firstValue = result;
+			isPointed = true;
+			isAdded = false;
+		}
 		setValueOnScreen(result);
-		isPointed = true;
-		isAdded = false;
-	}	
-				
+	}
+	
 	private void setValueToZero() {
 		setValueOnScreen(ZERO);
 	}
@@ -221,7 +219,7 @@ public class Calculator extends WebPage{
 		
 		String value = this.value.getInput();
 		if (isAdded) {
-			if (value.equals("0")) {
+			if (value.equals(ZERO)) {
 				value = s;				
 			} else {
 				value += s;
@@ -238,39 +236,24 @@ public class Calculator extends WebPage{
 		this.value.setModelObject(value);
 	}
 	
-	private String mathOperation(String first, String second) {
-
-		BigDecimal result = new BigDecimal("0");
-		BigDecimal firstValue = new BigDecimal(first);
-		BigDecimal secondValue = new BigDecimal(second);
+	private String deleteOneDigit(String value) {
 		
-		switch (operation) {
-
-		case ("plus"):
-			result = firstValue.add(secondValue);
-			break;
-			
-		case ("minus"):
-			result = firstValue.subtract(secondValue);
-			break;
-			
-		case ("division"):
-			if (secondValue.equals(result)) {
-				setDefault();
-				return "err";
-			}
-			result = firstValue.divide(secondValue, 6, BigDecimal.ROUND_HALF_UP);			
-			break;
-			
-		case ("multiply"):
-			result = firstValue.multiply(secondValue);
-			break;
-		}
-		
-		this.firstValue = result.stripTrailingZeros().toPlainString();
-
-		return this.firstValue;
+		if(value.length()>1) {
+		value = value.substring(0, value.length() - 1);
+		} else if (value.length()==1) value = ZERO;
+		return value;
 	}
+	
+	private String setPlusMinus(String value) {
+		
+		if (value.startsWith(MINUS)) {
+			value = value.substring(1);
+		} else {
+			value = MINUS + value;
+		}
+		return value;
+	}
+	
 }
 
 	
