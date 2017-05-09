@@ -4,7 +4,9 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.wicket.Page;
 import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxButton;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
@@ -12,6 +14,7 @@ import org.apache.wicket.markup.html.form.Button;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.model.Model;
+import org.apache.wicket.util.IContextProvider;
 import org.apache.wicket.util.parse.metapattern.MetaPattern;
 import org.apache.wicket.validation.validator.PatternValidator;
 
@@ -24,7 +27,7 @@ public class Calculator extends WebPage{
 	private final String MINUS = "-";
 	
 	private Form<?> form;
-	private TextField<String> value; 
+	private TextField<String> screenValue; 
 	private Operation operation;
 	private String firstValue;
 	private String secondValue;	
@@ -32,16 +35,19 @@ public class Calculator extends WebPage{
 	private boolean isSigned;
 	private boolean isAdded;	
 	
-	public Calculator() {		 
+	public Calculator() {	
 				
 		form = new Form<String>("form");
+		
 		add(new Label("lbl", new Model<String>("Calculator")));
-		add(new Label("lab", new Model<String>("To start the application press \"C\" button ")));				
-		value = new TextField<String>("value",  new Model<String>(ZERO));		
-		form.add(value);		
+		screenValue = new TextField<String>("value",  new Model<String>(ZERO));
+		screenValue.setOutputMarkupId(true);
+		form.add(screenValue);	
+	
 		setDefault();
 		initAllButtons();
 		add(form);			
+		
 	}
 
 	private void initAllButtons() {
@@ -61,11 +67,12 @@ public class Calculator extends WebPage{
 			form.add(new AjaxButton(s) {
 				
 				public void onSubmit(AjaxRequestTarget target, Form form) {
-							
+					
 					setValueOnScreen(setValuesForNumbers(s));					
-					target.add(value, "value");
+					target.add(screenValue);
 				}
 			});
+			
 		}
 	}
 
@@ -78,7 +85,12 @@ public class Calculator extends WebPage{
 
 				public void onSubmit(AjaxRequestTarget target, Form form) {
 
-					String num = value.getInput();
+					setMathOperation(op);
+					target.add(screenValue);
+				}
+
+				private void setMathOperation(final Operation op) {
+					String num = screenValue.getInput();
 					if (num.equals(ERROR)) {
 						setDefault();
 						setValueToZero();
@@ -86,7 +98,6 @@ public class Calculator extends WebPage{
 					}
 
 					getMathOperand(op, num);
-					target.add(value, "value");
 				}
 
 				private void getMathOperand(Operation op, String num) {
@@ -102,23 +113,22 @@ public class Calculator extends WebPage{
 					}
 					operation = op;
 				}
-
 			});
 		}
 	}
 	
 	private void initPlusMinus() {
 
-		form.add(new AjaxButton("plusMinus") {
 
-			public void onSubmit(AjaxRequestTarget target, Form form) {
-				
+		form.add(new AjaxButton("plusMinus") {
+			
+			public void onSubmit(AjaxRequestTarget target, Form form) {				
+			
 				if (isAdded) {
-					String textValue = value.getInput();
-					textValue = setPlusMinus(textValue);
-				
+					String textValue = screenValue.getInput();
+					textValue = setPlusMinus(textValue);					
 					setValueOnScreen(textValue);
-					target.add(value);					
+					target.add(screenValue);					
 				}
 			}
 		});			
@@ -131,11 +141,10 @@ public class Calculator extends WebPage{
 			public void onSubmit(AjaxRequestTarget target, Form form) {
 				if (isAdded) {				
 				
-					String textValue = value.getInput();
+					String textValue = screenValue.getInput();
 					textValue = deleteOneDigit(textValue);
-					setValueOnScreen(textValue);
-				
-					target.add(value);
+					setValueOnScreen(textValue);				
+					target.add(screenValue);
 				}				
 			}
 		});
@@ -143,11 +152,12 @@ public class Calculator extends WebPage{
 
 	private void initClear() {
 		
-		form.add(new Button("clear") {
+		form.add(new AjaxButton("clear") {
 			
-			public void onSubmit() {
+			public void onSubmit(AjaxRequestTarget target, Form form) {
 				setDefault();
 				setValueToZero();
+				target.add(screenValue);
 			}
 		});
 	}
@@ -158,11 +168,11 @@ public class Calculator extends WebPage{
 			public void onSubmit(AjaxRequestTarget target, Form form) {
 				
 				if (isSigned) {
-					secondValue = value.getInput();
+					secondValue = screenValue.getInput();
 					isSigned = false;
 					getResult();
-					setDefault();
-					target.add(value);
+					setDefault();		
+					target.add(screenValue);
 				}
 			}
 		});
@@ -174,9 +184,9 @@ public class Calculator extends WebPage{
 			public void onSubmit(AjaxRequestTarget target, Form form) {
 				
 				if(!isPointed) {
-				setValueOnScreen(value.getInput()+".");
+				setValueOnScreen(screenValue.getInput()+".");
 				isPointed = true;
-				target.add(value);
+				target.add(screenValue);
 				}
 			}
 		});
@@ -213,7 +223,7 @@ public class Calculator extends WebPage{
 	
 	private String setValuesForNumbers(String s) {
 		
-		String value = this.value.getInput();
+		String value = this.screenValue.getInput();
 		if (isAdded) {
 			if (value.equals(ZERO)) {
 				value = s;				
@@ -229,7 +239,7 @@ public class Calculator extends WebPage{
 
 	private void setValueOnScreen(String value) {
 		
-		this.value.setModelObject(value);
+		this.screenValue.setModelObject(value);
 	}
 	
 	private String deleteOneDigit(String value) {

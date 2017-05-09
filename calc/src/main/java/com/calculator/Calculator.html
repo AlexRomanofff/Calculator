@@ -7,12 +7,12 @@
 </head>
 <body>
 	
-	<h1 class = "label" wicket:id="lbl"></h1>
-	<h2 wicket:id="lab"></h2>	
+	<h1 class = "label" wicket:id="lbl"></h1>	
 		
-	<form wicket:id="form">
+	<form wicket:id="form" action = "get">
 	<div class = "calc">
 		<div class = "elements">
+					
 			<input class = "window" wicket:id="value" type="text"/><br>	
 				<div class = "calc_buttons">			
 					<input wicket:id="1" type="button" value="1"/>
@@ -32,15 +32,11 @@
 					<input wicket:id="plusMinus" type="button" value="+/-"/>
 					<input wicket:id="divide" type="button" value="/"/><br>
 					<input wicket:id="backspace" type="button" value="bsp"/>	
-					<input wicket:id="clear" type="submit" value="C"/>
+					<input wicket:id="clear" type="button" value="C"/>
 					<input wicket:id="equal" type="button" id = "equal" value="="/>
 				</div>		
 			</div>	
 		</div>	
-	</form>
-		
-		
-	
-	
+	</form>	
 </body>
 </html>
